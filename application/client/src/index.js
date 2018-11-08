@@ -84,7 +84,7 @@ web3resolver().then(function() {
     }
     
     // let drizzle know what contracts we want
-    const options = { contracts: [AuctionStore] };
+    const options = { contracts: [AuctionStore], events: {AuctionStore:["NewBundle","NewBid","AuctionEnded"]} };
             
     // Drizzle Store
     //

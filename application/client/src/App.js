@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import ReadHorseAuction from "./ReadHorseAuction";
+import WriteHorseAuction from "./WriteHorseAuction";
 
 class App extends Component {
   state = { loading: true, drizzleState: null };
@@ -32,6 +33,10 @@ class App extends Component {
       drizzle={this.props.drizzle}
       drizzleState={this.state.drizzleState}
     />
+    <WriteHorseAuction
+          drizzle={this.props.drizzle}
+          drizzleState={this.state.drizzleState}
+        />
   </div>;
   }
 }
