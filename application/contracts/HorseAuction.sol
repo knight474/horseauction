@@ -62,9 +62,8 @@ contract HorseAuction is Ownable, Pausable {
         @param amount The amount of HORSE to include in the bundle
         @param duration Duration of the auction in seconds
     */
-    function sell(uint256 amount, uint256 duration) external {
-        require(!paused(),"Contract is paused");
-
+    function sell(uint256 amount, uint256 duration) external 
+    whenNotPaused() {
         //set minimal amount to avoid bundle spamming
         require(amount >= MINIMAL_BUNDLE, "Not enough HORSE in this bundle");
         require(duration > MINIMAL_DURATION, "Duration is too short");
@@ -91,9 +90,8 @@ contract HorseAuction is Ownable, Pausable {
     */
     function bid(bytes32 bundleId) external payable 
     _exists(bundleId)
-    _active(bundleId) {
-        require(!paused(),"Contract is paused");
-
+    _active(bundleId) 
+    whenNotPaused() {
         Bundle storage bundle = bundles[bundleId];
         //Bidder must outbid the previous bidder
         require(bundle.currentBid < msg.value, "You must outbid the current value");
@@ -119,7 +117,7 @@ contract HorseAuction is Ownable, Pausable {
     function withdrawBundle(bytes32 bundleId) external 
     _exists(bundleId)
     _expired(bundleId) {
-        Bundle storage bundle = bundles[bundleId];
+        Bundle memory bundle = bundles[bundleId];
         //did we get any bids?
         if(bundle.currentBid > 0) {
             //compute the amount to keep
@@ -128,13 +126,20 @@ contract HorseAuction is Ownable, Pausable {
             bundle.seller.transfer(bundle.currentBid-commission);
             _collected = _collected + commission;
             //give the buyer his HORSE
-            require(horseToken.transfer(bundle.highestBidder, bundle.amount),"Transfer failed");
+            //prevent reentrancy by deleting the bundle before calling transfer function
+            address to = bundle.highestBidder;
+            uint256 what = bundle.amount;
+            delete(bundles[bundleId]);
+            require(horseToken.transfer(to, what),"Transfer failed");
         } else {
             //just give me back my horse
-            require(horseToken.transfer(bundle.seller, bundle.amount),"Transfer failed");
+            //prevent reentrancy by deleting the bundle before calling transfer function
+            address to = bundle.highestBidder;
+            uint256 what = bundle.amount;
+            delete(bundles[bundleId]);
+            require(horseToken.transfer(to,what),"Transfer failed");
         }
         
-        delete(bundles[bundleId]);
         emit AuctionEnded(bundleId);
     }
 
