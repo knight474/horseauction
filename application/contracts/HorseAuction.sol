@@ -118,6 +118,8 @@ contract HorseAuction is Ownable, Pausable {
     _exists(bundleId)
     _expired(bundleId) {
         Bundle memory bundle = bundles[bundleId];
+        address to = bundle.highestBidder;
+        uint256 what = bundle.amount;
         //did we get any bids?
         if(bundle.currentBid > 0) {
             //compute the amount to keep
@@ -125,20 +127,14 @@ contract HorseAuction is Ownable, Pausable {
             //give the seller his ETH
             bundle.seller.transfer(bundle.currentBid-commission);
             _collected = _collected + commission;
-            //give the buyer his HORSE
-            //prevent reentrancy by deleting the bundle before calling transfer function
-            address to = bundle.highestBidder;
-            uint256 what = bundle.amount;
-            delete(bundles[bundleId]);
-            require(horseToken.transfer(to, what),"Transfer failed");
         } else {
             //just give me back my horse
-            //prevent reentrancy by deleting the bundle before calling transfer function
-            address to = bundle.highestBidder;
-            uint256 what = bundle.amount;
-            delete(bundles[bundleId]);
-            require(horseToken.transfer(to,what),"Transfer failed");
+            to = bundle.seller;
         }
+
+        //prevent reentrancy by deleting the bundle before calling transfer function
+        delete(bundles[bundleId]);
+        require(horseToken.transfer(to, what),"Transfer failed");
         
         emit AuctionEnded(bundleId);
     }
