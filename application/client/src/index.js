@@ -12,13 +12,14 @@ import AuctionStoreArtifact from "./truffle-build/HorseAuction.json";
  
 import Web3 from 'web3'
  
-const fallback = 'wss://mainnet.infura.io/ws'
+const fallback = 'wss://kovan.infura.io/ws'
  
 function resolveWeb3(resolve, reject){
  
   // Modern dapp browsers...
   if (window.ethereum) {
-      console.log('web3, using ethereum provider')
+    console.log('web3, using ethereum provider')
+    console.log(window.ethereum);
      
       window.web3 = new Web3(window.ethereum);
  
@@ -46,7 +47,6 @@ function resolveWeb3(resolve, reject){
   // fallback provider
   else if (typeof window.web3 === undefined) {
     console.log('web3, using fallback provider')
-   
     window.web3 = new Web3(fallback);
     window.metamask = false;
    
@@ -82,9 +82,21 @@ web3resolver().then(function() {
         contractName: AuctionStoreArtifact.contractName,
         web3Contract: new window.web3.eth.Contract(AuctionStoreArtifact.abi, "0x55Ecded9928C3B2f0e750B4292D81b3b5988Ccd0")
     }
+
     
     // let drizzle know what contracts we want
-  const options = { contracts: [AuctionStore], events: { 'AuctionStore': ['NewBundle']} };
+  const options = {
+    contracts: [AuctionStore], events: {
+      "AuctionStore": [
+        {
+          eventName: "NewBundle",
+          eventOptions: {
+            fromBlock: 0,
+          }
+        }
+      ]
+    }
+  };
             
     // Drizzle Store
     //

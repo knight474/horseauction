@@ -8,13 +8,14 @@ class ReadHorseAuction extends React.Component {
     const contract = drizzle.contracts.HorseAuction;
     // let drizzle know we want to watch the `myString` method
     const dataKey = contract.methods.isOwner.cacheCall({from: this.props.drizzleState.accounts[0]});
-    contract.events.NewBundle({/* eventOptions */ }, (error, event) => {
-      debugger;
-      console.log(error, event);
-  })
+    contract.events.NewBundle({
+      fromBlock: 1,
+      toBlock: 'latest'
+    })
     .on('data', (event) => console.log(event))
     .on('changed', (event) => console.log(event))
     .on('error', (error) => console.log(error));
+
     // save the `dataKey` to local component state for later reference
     this.setState({ dataKey });
   }
@@ -25,8 +26,8 @@ class ReadHorseAuction extends React.Component {
 
     // using the saved `dataKey`, get the variable we're interested in
     const myOwner = HorseAuction.isOwner[this.state.dataKey];
-
     console.log(HorseAuction.events);
+    debugger;
 
     // if it exists, then we display its value
     return <p>I am owner: {myOwner && myOwner.value}</p>;
